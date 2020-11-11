@@ -56,6 +56,7 @@ class Vocab(Configurable):
       self.SPECIAL_TOKENS = ('pad', self.root_label, 'unk')
     
     self._counts = Counter()
+    self.testPrint = 0
     self._str2idx = {}
     self._idx2str = {}
     self.trainable_embeddings = None
@@ -239,7 +240,10 @@ class Vocab(Configurable):
   #=============================================================
   def embedding_lookup(self, inputs, pret_inputs=None, moving_params=None):
     """"""
-    
+    self.testPrint += 1
+    if self.testPrint < 10:
+      print('EMBEDDING')
+      print(inputs)
     if moving_params is not None:
       trainable_embeddings = moving_params.average(self.trainable_embeddings)
     else:
@@ -249,8 +253,12 @@ class Vocab(Configurable):
     if moving_params is None:
       tf.add_to_collection('Weights', embed_input)
     if self.use_pretrained and pret_inputs is not None:
+      if self.testPrint < 10:
+        print(embed_input, tf.nn.embedding_lookup(self.pretrained_embeddings, pret_inputs))
       return embed_input, tf.nn.embedding_lookup(self.pretrained_embeddings, pret_inputs)
     else:
+      if self.testPrint < 10:
+        print(embed_input)
       return embed_input
   
   #=============================================================
