@@ -82,7 +82,7 @@ def linear(inputs, output_size, add_bias=True, n_splits=1, initializer=None, sco
     output_shape = tf.stack(output_shape)
     for i, (input_, shape) in enumerate(zip(inputs, shapes)):
       inputs[i] = tf.reshape(input_, [-1, shape[-1]])
-    concatenation = tf.concat(1, inputs)
+    concatenation = tf.concat(inputs, 1)
     
     # Get the matrix
     if initializer is None and moving_params is None:
@@ -138,9 +138,9 @@ def bilinear(inputs1, inputs2, output_size, add_bias2=True, add_bias1=True, add_
     inputs1 = tf.reshape(inputs1, tf.stack([batch_size, inputs1_bucket_size, inputs1_size]))
     inputs2 = tf.reshape(inputs2, tf.stack([batch_size, inputs2_bucket_size, inputs2_size]))
     if add_bias1:
-      inputs1 = tf.concat(2, [inputs1, tf.ones(tf.stack([batch_size, inputs1_bucket_size, 1]))])
+      inputs1 = tf.concat([inputs1, tf.ones(tf.stack([batch_size, inputs1_bucket_size, 1]))], 2)
     if add_bias2:
-      inputs2 = tf.concat(2, [inputs2, tf.ones(tf.stack([batch_size, inputs2_bucket_size, 1]))])
+      inputs2 = tf.concat([inputs2, tf.ones(tf.stack([batch_size, inputs2_bucket_size, 1]))], 2)
     
     # Get the matrix
     if initializer is None and moving_params is None:

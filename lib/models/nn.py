@@ -98,7 +98,7 @@ class NN(Configurable):
       tag_embed_size = 0 if tag_inputs is None else tag_inputs.get_shape().as_list()[-1]
       rel_embed_size = 0 if rel_inputs is None else rel_inputs.get_shape().as_list()[-1]
     
-    return tf.concat(2, filter(lambda x: x is not None, [word_inputs, tag_inputs, rel_inputs]))
+    return tf.concat(filter(lambda x: x is not None, [word_inputs, tag_inputs, rel_inputs]), 2)
   
   #=============================================================
   def RNN(self, inputs):
@@ -123,7 +123,7 @@ class NN(Configurable):
                                                                     dtype=tf.float32)
       fw_cell, fw_out = tf.split(1, 2, fw_recur)
       bw_cell, bw_out = tf.split(1, 2, bw_recur)
-      end_recur = tf.concat(1, [fw_out, bw_out])
+      end_recur = tf.concat([fw_out, bw_out], 1)
       top_recur.set_shape([tf.Dimension(None), tf.Dimension(None), tf.Dimension(2*self.recur_size)])
     else:
       top_recur, end_recur = rnn.dynamic_rnn(cell, inputs,
@@ -150,7 +150,7 @@ class NN(Configurable):
       arc_logits = self.bilinear_classifier(dep_mlp, head_mlp, keep_prob=self.info_keep_prob)
       arc_prob = self.softmax(arc_logits)
       head_lin = tf.batch_matmul(arc_prob, top_recur)
-      top_recur = tf.concat(2, [top_recur, head_lin])
+      top_recur = tf.concat([top_recur, head_lin], 2)
     top_recur.set_shape([tf.Dimension(None), tf.Dimension(None), tf.Dimension(4*self.recur_size)])
     return top_recur
 
@@ -229,7 +229,7 @@ class NN(Configurable):
                         add_bias=True,
                         moving_params=self.moving_params)
     if func.__name__ in ('gated_tanh', 'gated_identity'):
-      linear = [tf.concat(n_dims-1, [lin1, lin2]) for lin1, lin2 in zip(linear[:len(linear)//2], linear[len(linear)//2:])]
+      linear = [tf.concat([lin1, lin2], n_dims-1) for lin1, lin2 in zip(linear[:len(linear)//2], linear[len(linear)//2:])]
     if n_splits == 1:
       linear = [linear]
     for i, split in enumerate(linear):
@@ -420,9 +420,9 @@ class NN(Configurable):
       inputs1 = tf.nn.dropout(inputs1, tf.sqrt(keep_prob), noise_shape=noise_shape)
       inputs2 = tf.nn.dropout(inputs2, tf.sqrt(keep_prob), noise_shape=noise_shape)
     
-    inputs1 = tf.concat(2, [inputs1, tf.ones(tf.stack([batch_size, bucket_size, 1]))])
+    inputs1 = tf.concat([inputs1, tf.ones(tf.stack([batch_size, bucket_size, 1]))], 2)
     inputs1.set_shape(input_shape_to_set)
-    inputs2 = tf.concat(2, [inputs2, tf.ones(tf.stack([batch_size, bucket_size, 1]))])
+    inputs2 = tf.concat([inputs2, tf.ones(tf.stack([batch_size, bucket_size, 1]))], 2)
     inputs2.set_shape(input_shape_to_set)
     
     bilin = linalg.diagonal_bilinear(inputs1, inputs2,
@@ -459,9 +459,9 @@ class NN(Configurable):
       inputs1 = tf.nn.dropout(inputs1, keep_prob, noise_shape=noise_shape)
       inputs2 = tf.nn.dropout(inputs2, keep_prob, noise_shape=noise_shape)
     
-    inputs1 = tf.concat(2, [inputs1, tf.ones(tf.stack([batch_size, bucket_size, 1]))])
+    inputs1 = tf.concat([inputs1, tf.ones(tf.stack([batch_size, bucket_size, 1]))], 2)
     inputs1.set_shape(input_shape_to_set)
-    inputs2 = tf.concat(2, [inputs2, tf.ones(tf.stack([batch_size, bucket_size, 1]))])
+    inputs2 = tf.concat([inputs2, tf.ones(tf.stack([batch_size, bucket_size, 1]))], 2)
     inputs2.set_shape(input_shape_to_set)
     
     bilin = linalg.bilinear(inputs1, inputs2,

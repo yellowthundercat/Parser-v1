@@ -530,8 +530,8 @@ def dynamic_rnn(cell, inputs, sequence_length=None, initial_state=None, ff_keep_
       x_shape = array_ops.shape(x)
       packed_shape = array_ops.pack(shape)
       return logging_ops.Assert(
-          math_ops.reduce_all(math_ops.equal(x_shape, packed_shape)),
-          ["Expected shape for Tensor %s is " % x.name,
+          condition=math_ops.reduce_all(math_ops.equal(x_shape, packed_shape)),
+          data=["Expected shape for Tensor %s is " % x.name,
            packed_shape, " but saw shape: ", x_shape])
 
     if sequence_length is not None:
@@ -613,7 +613,7 @@ def _dynamic_rnn_loop( cell, inputs, initial_state, ff_keep_prob, recur_keep_pro
 
   if isinstance(ff_keep_prob, ops.Tensor) or ff_keep_prob < 1:
     inputs = nn_ops.dropout(inputs, ff_keep_prob, noise_shape=array_ops.pack([1, batch_size, const_depth]))
-  input_ta = input_ta.unpack(inputs)
+  input_ta = input_ta.unstack(inputs)
   
   if isinstance(recur_keep_prob, ops.Tensor) or recur_keep_prob < 1:
     ones = array_ops.ones(array_ops.pack([batch_size, cell.output_size]), inputs.dtype)

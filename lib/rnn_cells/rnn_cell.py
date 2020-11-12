@@ -40,7 +40,7 @@ class RNNCell(BaseCell):
     
     if self.recur_diag_bilin:
       inputs1, inputs2 = tf.split(1, 2, inputs)
-      inputs = tf.concat(1, [inputs1*inputs2, inputs1, inputs2])
+      inputs = tf.concat([inputs1*inputs2, inputs1, inputs2], 1)
     with tf.variable_scope(scope or type(self).__name__):
       hidden_act = linalg.linear([inputs, state],
                                  self.output_size,

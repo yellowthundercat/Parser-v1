@@ -65,7 +65,7 @@ class LSTMCell(BaseCell):
         cell_mask = tf.nn.dropout(tf.ones_like(cell_t), self.cell_include_prob)*self.cell_include_prob
         cell_t = cell_mask * cell_t + (1-cell_mask) * cell_tm1
       
-      return hidden_t, tf.concat(1, [cell_t, hidden_t])
+      return hidden_t, tf.concat([cell_t, hidden_t], 1)
   
   #=============================================================
   @property

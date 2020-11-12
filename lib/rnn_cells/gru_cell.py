@@ -51,7 +51,7 @@ class GRUCell(BaseCell):
                                    moving_params=self.moving_params)
         hidden_tilde = self.recur_func(hidden_act)
       cell_t = update_gate * cell_tm1 + (1-update_gate) * hidden_tilde
-    return cell_t, tf.concat(1, [cell_t, cell_t])
+    return cell_t, tf.concat([cell_t, cell_t], 1)
   
   #=============================================================
   @property
