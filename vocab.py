@@ -243,7 +243,7 @@ class Vocab(Configurable):
     self.testPrint += 1
     if self.testPrint < 10:
       print('EMBEDDING')
-      print(inputs)
+      print('input', inputs)
     if moving_params is not None:
       trainable_embeddings = moving_params.average(self.trainable_embeddings)
     else:
@@ -254,11 +254,11 @@ class Vocab(Configurable):
       tf.add_to_collection('Weights', embed_input)
     if self.use_pretrained and pret_inputs is not None:
       if self.testPrint < 10:
-        print(embed_input, tf.nn.embedding_lookup(self.pretrained_embeddings, pret_inputs))
+        print('output', embed_input, tf.nn.embedding_lookup(self.pretrained_embeddings, pret_inputs))
       return embed_input, tf.nn.embedding_lookup(self.pretrained_embeddings, pret_inputs)
     else:
       if self.testPrint < 10:
-        print(embed_input)
+        print('output', embed_input)
       return embed_input
   
   #=============================================================
@@ -277,7 +277,7 @@ class Vocab(Configurable):
     
     embed_input = tf.matmul(tf.reshape(inputs, [-1, input_size]),
                             trainable_embeddings)
-    embed_input = tf.reshape(embed_input, tf.pack([batch_size, bucket_size, self.embed_size]))
+    embed_input = tf.reshape(embed_input, tf.stack([batch_size, bucket_size, self.embed_size]))
     embed_input.set_shape([tf.Dimension(None), tf.Dimension(None), tf.Dimension(self.embed_size)]) 
     if moving_params is None:
       tf.add_to_collection('Weights', embed_input)

@@ -79,7 +79,7 @@ def linear(inputs, output_size, add_bias=True, n_splits=1, initializer=None, sco
     for i in xrange(len(shapes[0])):
       output_shape.append(input_shape[i])
     output_shape[-1] = output_size
-    output_shape = tf.pack(output_shape)
+    output_shape = tf.stack(output_shape)
     for i, (input_, shape) in enumerate(zip(inputs, shapes)):
       inputs[i] = tf.reshape(input_, [-1, shape[-1]])
     concatenation = tf.concat(1, inputs)
@@ -134,13 +134,13 @@ def bilinear(inputs1, inputs2, output_size, add_bias2=True, add_bias1=True, add_
     output_shape.append(inputs1_bucket_size)
     output_shape.append(output_size)
     output_shape.append(inputs2_bucket_size)
-    output_shape = tf.pack(output_shape)
-    inputs1 = tf.reshape(inputs1, tf.pack([batch_size, inputs1_bucket_size, inputs1_size]))
-    inputs2 = tf.reshape(inputs2, tf.pack([batch_size, inputs2_bucket_size, inputs2_size]))
+    output_shape = tf.stack(output_shape)
+    inputs1 = tf.reshape(inputs1, tf.stack([batch_size, inputs1_bucket_size, inputs1_size]))
+    inputs2 = tf.reshape(inputs2, tf.stack([batch_size, inputs2_bucket_size, inputs2_size]))
     if add_bias1:
-      inputs1 = tf.concat(2, [inputs1, tf.ones(tf.pack([batch_size, inputs1_bucket_size, 1]))])
+      inputs1 = tf.concat(2, [inputs1, tf.ones(tf.stack([batch_size, inputs1_bucket_size, 1]))])
     if add_bias2:
-      inputs2 = tf.concat(2, [inputs2, tf.ones(tf.pack([batch_size, inputs2_bucket_size, 1]))])
+      inputs2 = tf.concat(2, [inputs2, tf.ones(tf.stack([batch_size, inputs2_bucket_size, 1]))])
     
     # Get the matrix
     if initializer is None and moving_params is None:
@@ -158,10 +158,10 @@ def bilinear(inputs1, inputs2, output_size, add_bias2=True, add_bias1=True, add_
     lin = tf.matmul(tf.reshape(inputs1, [-1, inputs1_size+add_bias1]),
                         tf.reshape(weights, [inputs1_size+add_bias1, -1]))
     # (b x nr x d) (b x n x d)T -> (b x nr x n)
-    bilin = tf.batch_matmul(tf.reshape(lin, tf.pack([batch_size, inputs1_bucket_size*output_size, inputs2_size+add_bias2])),
+    bilin = tf.batch_matmul(tf.reshape(lin, tf.stack([batch_size, inputs1_bucket_size*output_size, inputs2_size+add_bias2])),
                                    inputs2, adj_y=True)
     # (bn x r x n)
-    bilin = tf.reshape(bilin, tf.pack([-1, output_size, inputs2_bucket_size]))
+    bilin = tf.reshape(bilin, tf.stack([-1, output_size, inputs2_bucket_size]))
     # (b x n x r x n)
     bilin = tf.reshape(bilin, output_shape)
     
@@ -198,9 +198,9 @@ def diagonal_bilinear(inputs1, inputs2, output_size, add_bias2=True, add_bias1=T
     output_shape.append(inputs1_bucket_size)
     output_shape.append(output_size)
     output_shape.append(inputs2_bucket_size)
-    output_shape = tf.pack(output_shape)
-    inputs1 = tf.reshape(inputs1, tf.pack([batch_size, inputs1_bucket_size, inputs1_size]))
-    inputs2 = tf.reshape(inputs2, tf.pack([batch_size, inputs2_bucket_size, inputs2_size]))
+    output_shape = tf.stack(output_shape)
+    inputs1 = tf.reshape(inputs1, tf.stack([batch_size, inputs1_bucket_size, inputs1_size]))
+    inputs2 = tf.reshape(inputs2, tf.stack([batch_size, inputs2_bucket_size, inputs2_size]))
     inputs1.set_shape([tf.Dimension(None)]*2 + [tf.Dimension(inputs1_size)])
     inputs2.set_shape([tf.Dimension(None)]*2 + [tf.Dimension(inputs2_size)])
     
@@ -243,8 +243,8 @@ def broadcast_add(inputs1, inputs2):
   inputs2_shape = tf.shape(inputs2)
   inputs1 = tf.transpose(inputs1, [0,2,1])
   inputs2 = tf.transpose(inputs2, [0,2,1])
-  inputs1 = tf.reshape(inputs1, tf.pack([-1,inputs1_shape[1],1]))
-  inputs2 = tf.reshape(inputs2, tf.pack([-1,1,inputs2_shape[1]]))
+  inputs1 = tf.reshape(inputs1, tf.stack([-1,inputs1_shape[1],1]))
+  inputs2 = tf.reshape(inputs2, tf.stack([-1,1,inputs2_shape[1]]))
   inputs = inputs1 + inputs2
   inputs = tf.reshape(inputs, [inputs1_shape[0], inputs1_shape[2],  inputs1_shape[1], inputs2_shape[1]])
   inputs = tf.transpose(inputs, [0,2,3,1])
@@ -260,8 +260,8 @@ def broadcast_sub(inputs1, inputs2):
   inputs2_shape = tf.shape(inputs2)
   inputs1 = tf.transpose(inputs1, [0,2,1])
   inputs2 = tf.transpose(inputs2, [0,2,1])
-  inputs1 = tf.reshape(inputs1, tf.pack([-1,inputs1_shape[1],1]))
-  inputs2 = tf.reshape(inputs2, tf.pack([-1,1,inputs2_shape[1]]))
+  inputs1 = tf.reshape(inputs1, tf.stack([-1,inputs1_shape[1],1]))
+  inputs2 = tf.reshape(inputs2, tf.stack([-1,1,inputs2_shape[1]]))
   inputs = inputs1 - inputs2
   inputs = tf.reshape(inputs, [inputs1_shape[0], inputs1_shape[2], inputs1_shape[1], inputs2_shape[1]])
   inputs = tf.transpose(inputs, [0,2,3,1])
@@ -277,10 +277,10 @@ def broadcast_mult(inputs1, inputs2):
   inputs2_shape = tf.shape(inputs2)
   inputs1 = tf.transpose(inputs1, [0,2,1])
   inputs2 = tf.transpose(inputs2, [0,2,1])
-  inputs1 = tf.reshape(inputs1, tf.pack([-1,inputs1_shape[1],1]))
-  inputs2 = tf.reshape(inputs2, tf.pack([-1,1,inputs2_shape[1]]))
+  inputs1 = tf.reshape(inputs1, tf.stack([-1,inputs1_shape[1],1]))
+  inputs2 = tf.reshape(inputs2, tf.stack([-1,1,inputs2_shape[1]]))
   inputs = inputs1 * inputs2
-  inputs = tf.reshape(inputs, tf.pack([inputs1_shape[0], inputs1_shape[2],  inputs1_shape[1], inputs2_shape[1]]))
+  inputs = tf.reshape(inputs, tf.stack([inputs1_shape[0], inputs1_shape[2],  inputs1_shape[1], inputs2_shape[1]]))
   inputs = tf.transpose(inputs, [0,2,3,1])
   inputs.set_shape([tf.Dimension(None)]*3 + [tf.Dimension(inputs_size)])
   return inputs

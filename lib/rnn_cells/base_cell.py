@@ -54,7 +54,7 @@ class BaseCell(Configurable):
                                  shape=self.state_size,
                                  dtype=dtype,
                                  initializer=tf.zeros_initializer)
-    state = tf.reshape(tf.tile(zero_state, tf.pack([batch_size])), tf.pack([batch_size, self.state_size]))
+    state = tf.reshape(tf.tile(zero_state, tf.stack([batch_size])), tf.stack([batch_size, self.state_size]))
     state.set_shape([None, self.state_size])
     return state
   
