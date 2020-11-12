@@ -50,16 +50,21 @@ class KMeans(object):
       lengths.extend([length]*count)
     lengths.sort()
     self._splits = [np.max(split) for split in np.array_split(lengths, self._k)]
+    # for avoid infinite loop
+    max_value = np.max(lengths)
+    min_value = np.min(lengths)
     
     i = len(self._splits)-1
     while i > 0:
-      while self._splits[i-1] >= self._splits[i] or self._splits[i-1] not in self._len_cntr:
+      while (self._splits[i-1] >= self._splits[i] or self._splits[i-1] not in self._len_cntr) and \
+              self._splits[i-1] > min_value:
         self._splits[i-1] -= 1
       i -= 1
     
     i = 1
     while i < len(self._splits)-1:
-      while self._splits[i] <= self._splits[i-1] or self._splits[i] not in self._len_cntr:
+      while (self._splits[i] <= self._splits[i-1] or self._splits[i] not in self._len_cntr) \
+              and self._splits[i] < max_value:
         self._splits[i] += 1
       i += 1
     
