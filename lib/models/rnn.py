@@ -364,7 +364,7 @@ def bidirectional_rnn(cell_fw, cell_bw, inputs, initial_state_fw=None, initial_s
                  initial_state_bw, dtype, sequence_length, scope=bw_scope)
   output_bw = _reverse_seq(tmp, sequence_length)
   # Concat each of the forward/backward outputs
-  outputs = [array_ops.concat(1, [fw, bw])
+  outputs = [array_ops.concat([fw, bw], 1)
              for fw, bw in zip(output_fw, output_bw)]
 
   return (outputs, output_state_fw, output_state_bw)
@@ -433,7 +433,7 @@ def dynamic_bidirectional_rnn(cell_fw, cell_bw, inputs, sequence_length, initial
   else:
     output_bw = array_ops.reverse_sequence(tmp, sequence_length, 1, 0)
   # Concat each of the forward/backward outputs
-  outputs = array_ops.concat(2, [output_fw, output_bw])
+  outputs = array_ops.concat([output_fw, output_bw], 2)
 
   return (outputs, output_state_fw, output_state_bw)
 
@@ -618,7 +618,7 @@ def _dynamic_rnn_loop( cell, inputs, initial_state, ff_keep_prob, recur_keep_pro
   if isinstance(recur_keep_prob, ops.Tensor) or recur_keep_prob < 1:
     ones = array_ops.ones(array_ops.pack([batch_size, cell.output_size]), inputs.dtype)
     state_dropout = nn_ops.dropout(ones, recur_keep_prob)
-    state_dropout = array_ops.concat(1, [ones] * (cell.state_size // cell.output_size - 1) + [state_dropout])
+    state_dropout = array_ops.concat([ones] * (cell.state_size // cell.output_size - 1) + [state_dropout], 1)
   else:
     state_dropout = 1.
     
