@@ -323,7 +323,7 @@ class NN(Configurable):
     else:
       keep_prob = 1
     if isinstance(keep_prob, tf.Tensor) or keep_prob < 1:
-      noise_shape = tf.([batch_size, 1, input_size])
+      noise_shape = tf.stack([batch_size, 1, input_size])
       # Experimental
       #inputs1 = tf.nn.dropout(inputs1, keep_prob if add_bias2 else tf.sqrt(keep_prob), noise_shape=noise_shape)
       #inputs2 = tf.nn.dropout(inputs2, keep_prob if add_bias1 else tf.sqrt(keep_prob), noise_shape=noise_shape)
